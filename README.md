@@ -7,7 +7,6 @@ PyTorch implementation of [DisKT](https://openreview.net/forum?id=z13UqeDT39)
 
 [![arXiv](https://img.shields.io/badge/Arxiv-2503.02539-red?logo=arxiv&label=Arxiv&color=red)](https://arxiv.org/abs/2503.02539)
 [![License](https://img.shields.io/badge/Code%20License-MIT%20License-yellow)](https://github.com/zyy-2001/DisKT/blob/master/LICENSE)
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fzyy-2001%2Fdiskt&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=Vistors&edge_flat=false)](https://hits.seeyoufarm.com)
 ![GitHub Repo stars](https://img.shields.io/github/stars/zyy-2001/DisKT)
 
 </h5>
