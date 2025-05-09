@@ -2,6 +2,7 @@
 
 PyTorch implementation of [DisKT](https://openreview.net/forum?id=z13UqeDT39)
 
+🌹**Many thanks to Ringotc for pointing out the issue in our code.**
 
 <h5 align=center>
 
