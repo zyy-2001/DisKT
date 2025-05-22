@@ -73,10 +73,11 @@ CUDA_VISIBLE_DEVICES=0 python main.py --model_name [diskt, dkt, dkvmn, skvmn, de
 ## 🎈Citation
 If you find our work valuable, we would appreciate your citation: 
 ```text
-@article{zhou2025disentangled,
+@inproceedings{zhou2025disentangled,
   title={Disentangled Knowledge Tracing for Alleviating Cognitive Bias},
   author={Zhou, Yiyun and Lv, Zheqi and Zhang, Shengyu and Chen, Jingyuan},
-  journal={arXiv preprint arXiv:2503.02539},
+  booktitle={Proceedings of the ACM on Web Conference 2025},
+  pages={2633--2645},
   year={2025}
 }
 ```
