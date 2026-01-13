@@ -2,7 +2,7 @@
 
 PyTorch implementation of [DisKT](https://openreview.net/forum?id=z13UqeDT39)
 
-🌹**Many thanks to Ringotc for pointing out the data leak issue in our code and providing a fix.**
+🌹**Many thanks to Ringotc and nguyendinhhieu12071988-afk for pointing out the data leak issue in our code and providing a fix.**
 
 <h5 align=center>
 
