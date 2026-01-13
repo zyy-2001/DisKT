@@ -187,73 +187,75 @@ class DualAttention(nn.Module):
         return output_v1, output_v2
 
 
-# Fixed by Ringotc, greatly appreciated.
-def contradictory_attention(query, key, value1, value2, mask=None, dropout=None, counter_attention_mask=None):
-    bs, head, seqlen, d_k = query.size(0), query.size(1), query.size(2), query.size(-1)
-    device = query.device
-    scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
-    
-    if mask is not None:
-        scores = scores.masked_fill(mask == 0, -1e32)
-    
-    p_attn = F.softmax(scores, dim = -1)  # [batch_size, head, seq_len, seq_len]
-    
-    expanded_mask = counter_attention_mask.unsqueeze(1).unsqueeze(1)  # [bs, 1, 1, seqlen]
-    expanded_mask = expanded_mask.expand(-1, head, seqlen, -1)  # [bs, head, seqlen, seqlen]
-    
-    LOG_MIN = -1e32
-    masked_attn = torch.where(expanded_mask == 1, 
-                             torch.ones_like(p_attn) * LOG_MIN, 
-                             p_attn + 1e-10)
-    
-    p_attn = F.softmax(masked_attn, dim = -1)
-    
-    pad_zero = torch.zeros(bs, head, 1, seqlen).to(device)
-    p_attn = torch.cat([pad_zero, p_attn[:, :, 1:, :]], dim=2)
-    
-    if dropout is not None:
-        p_attn = dropout(p_attn)
-    
-    output_v1 = torch.matmul(p_attn, value1)
-    output_v2 = torch.matmul(p_attn, value2)
-    return output_v1, output_v2, p_attn
-
-# # Original version
+# # Fixed by Ringotc, greatly appreciated.
 # def contradictory_attention(query, key, value1, value2, mask=None, dropout=None, counter_attention_mask=None):
-#     "Compute 'Scaled Dot Product Attention'"
-#     '''
-#     query: [batch_size, head, seq_len, feature]
-#     '''
 #     bs, head, seqlen, d_k = query.size(0), query.size(1), query.size(2), query.size(-1)
 #     device = query.device
-#     scores = torch.matmul(query, key.transpose(-2, -1)) \
-#              / math.sqrt(d_k)
-
+#     scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(d_k)
+    
 #     if mask is not None:
 #         scores = scores.masked_fill(mask == 0, -1e32)
-#     p_attn = F.softmax(scores, dim = -1) # [batch_size, head, seq_len, seq_len]
-
-#     # Reallocate attention weights, making the positions of mistakes and guesses receive less attention weight
-#     attn_reshape = p_attn.reshape(bs*head*seqlen, -1)
-#     counter_attention_mask = counter_attention_mask.unsqueeze(1)
-#     counter_attention_mask = counter_attention_mask.expand(-1, head*seqlen, -1)
-#     counter_attention_mask = counter_attention_mask.reshape(-1, seqlen)
-
-#     # attn_reshape = attn_reshape * counter_attention_mask
-#     p_attn = torch.where((counter_attention_mask == 1), torch.zeros_like(attn_reshape), attn_reshape)
-
-#     p_attn = p_attn.reshape(bs, head, seqlen, -1)
-#     p_attn = F.softmax(p_attn, dim = -1)
-
+    
+#     p_attn = F.softmax(scores, dim = -1)  # [batch_size, head, seq_len, seq_len]
+    
+#     expanded_mask = counter_attention_mask.unsqueeze(1).unsqueeze(1)  # [bs, 1, 1, seqlen]
+#     expanded_mask = expanded_mask.expand(-1, head, seqlen, -1)  # [bs, head, seqlen, seqlen]
+    
+#     LOG_MIN = -1e32
+#     masked_attn = torch.where(expanded_mask == 1, 
+#                              torch.ones_like(p_attn) * LOG_MIN, 
+#                              p_attn + 1e-10)
+    
+#     p_attn = F.softmax(masked_attn, dim = -1)
+    
 #     pad_zero = torch.zeros(bs, head, 1, seqlen).to(device)
-
-#     p_attn = torch.cat([pad_zero, p_attn[:, :, 1:, :]], dim=2) 
+#     p_attn = torch.cat([pad_zero, p_attn[:, :, 1:, :]], dim=2)
+    
 #     if dropout is not None:
 #         p_attn = dropout(p_attn)
-
+    
 #     output_v1 = torch.matmul(p_attn, value1)
 #     output_v2 = torch.matmul(p_attn, value2)
 #     return output_v1, output_v2, p_attn
+
+# Original version (Fixed by nguyendinhhieu12071988-afk, greatly appreciated.)
+def contradictory_attention(query, key, value1, value2, mask=None, dropout=None, counter_attention_mask=None):
+    "Compute 'Scaled Dot Product Attention'"
+    '''
+    query: [batch_size, head, seq_len, feature]
+    '''
+    bs, head, seqlen, d_k = query.size(0), query.size(1), query.size(2), query.size(-1)
+    device = query.device
+    scores = torch.matmul(query, key.transpose(-2, -1)) \
+             / math.sqrt(d_k)
+
+    if mask is not None:
+        scores = scores.masked_fill(mask == 0, -1e32)
+    p_attn = F.softmax(scores, dim = -1) # [batch_size, head, seq_len, seq_len]
+
+    # Reallocate attention weights, making the positions of mistakes and guesses receive less attention weight
+    attn_reshape = p_attn.reshape(bs*head*seqlen, -1)
+    counter_attention_mask = counter_attention_mask.unsqueeze(1)
+    counter_attention_mask = counter_attention_mask.expand(-1, head*seqlen, -1)
+    counter_attention_mask = counter_attention_mask.reshape(-1, seqlen)
+
+    # attn_reshape = attn_reshape * counter_attention_mask
+    p_attn = torch.where((counter_attention_mask == 1), torch.zeros_like(attn_reshape), attn_reshape)
+
+    p_attn = p_attn.reshape(bs, head, seqlen, -1)
+    if mask is not None:
+        p_attn = p_attn.masked_fill(mask == 0, -1e32)
+    p_attn = F.softmax(p_attn, dim = -1)
+
+    pad_zero = torch.zeros(bs, head, 1, seqlen).to(device)
+
+    p_attn = torch.cat([pad_zero, p_attn[:, :, 1:, :]], dim=2) 
+    if dropout is not None:
+        p_attn = dropout(p_attn)
+
+    output_v1 = torch.matmul(p_attn, value1)
+    output_v2 = torch.matmul(p_attn, value2)
+    return output_v1, output_v2, p_attn
 
 # def contradictory_attention(query, key, value1, value2, mask=None, dropout=None, counter_attention_mask=None):
 #     "Compute 'Scaled Dot Product Attention'"
